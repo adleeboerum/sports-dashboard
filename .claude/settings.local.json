@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl -s \"https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event=401873199\")",
+      "Bash(curl -s \"https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/scoreboard?dates=20260521\")",
+      "Bash(curl -s \"https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard?dates=20260521\")",
+      "Bash(curl -s \"https://site.api.espn.com/apis/site/v2/sports/hockey/nhl/summary?event=401873383\")",
+      "Bash(curl -s \"https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/summary?event=401815437\")",
+      "Bash(curl -s \"https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=20260521\")",
+      "Bash(curl -s \"https://site.api.espn.com/apis/site/v2/sports/football/nfl/scoreboard?dates=20260120\")",
+      "Bash(curl -s \"https://site.api.espn.com/apis/site/v2/sports/basketball/mens-college-basketball/scoreboard?dates=20260521\")",
+      "Bash(curl -s \"https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/scoreboard\")",
+      "Bash(curl -s \"https://site.api.espn.com/apis/site/v2/sports/baseball/mlb/summary?event=401815441\")"
+    ]
+  }
+}
