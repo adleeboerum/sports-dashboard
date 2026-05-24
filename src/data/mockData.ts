@@ -1,4 +1,4 @@
-import type { Game, League, LeagueId } from '../types'
+import type { Game, League, LeagueId, LeagueStandings } from '../types'
 
 export const LEAGUES: League[] = [
   { id: 'NFL', name: 'National Football League', shortName: 'NFL', sport: 'Football', color: '#013369' },
@@ -1331,3 +1331,265 @@ export const MOCK_GAMES: Game[] = [
     },
   },
 ]
+
+export const MOCK_STANDINGS: Partial<Record<LeagueId, LeagueStandings>> = {
+  NBA: {
+    leagueId: 'NBA',
+    lastUpdated: new Date().toISOString(),
+    groups: [
+      {
+        name: 'Atlantic',
+        entries: [
+          { rank: 1, teamId: 'celtics', teamName: 'Boston Celtics', teamAbbreviation: 'BOS', logoUrl: 'https://cdn.nba.com/logos/nba/1610612738/global/L/logo.svg', wins: 64, losses: 18, pct: '.780', gb: '—', streak: 'W4', last10: '8-2' },
+          { rank: 2, teamId: 'knicks', teamName: 'New York Knicks', teamAbbreviation: 'NYK', logoUrl: 'https://cdn.nba.com/logos/nba/1610612752/global/L/logo.svg', wins: 50, losses: 32, pct: '.610', gb: '14', streak: 'W2', last10: '6-4' },
+          { rank: 3, teamId: '76ers', teamName: 'Philadelphia 76ers', teamAbbreviation: 'PHI', logoUrl: 'https://cdn.nba.com/logos/nba/1610612755/global/L/logo.svg', wins: 47, losses: 35, pct: '.573', gb: '17', streak: 'L2', last10: '5-5' },
+          { rank: 4, teamId: 'nets', teamName: 'Brooklyn Nets', teamAbbreviation: 'BKN', logoUrl: 'https://cdn.nba.com/logos/nba/1610612751/global/L/logo.svg', wins: 32, losses: 50, pct: '.390', gb: '32', streak: 'L3', last10: '3-7' },
+          { rank: 5, teamId: 'raptors', teamName: 'Toronto Raptors', teamAbbreviation: 'TOR', logoUrl: 'https://cdn.nba.com/logos/nba/1610612761/global/L/logo.svg', wins: 25, losses: 57, pct: '.305', gb: '39', streak: 'W1', last10: '3-7' },
+        ],
+      },
+      {
+        name: 'Central',
+        entries: [
+          { rank: 1, teamId: 'bucks', teamName: 'Milwaukee Bucks', teamAbbreviation: 'MIL', logoUrl: 'https://cdn.nba.com/logos/nba/1610612749/global/L/logo.svg', wins: 49, losses: 33, pct: '.598', gb: '—', streak: 'W1', last10: '6-4' },
+          { rank: 2, teamId: 'cavaliers', teamName: 'Cleveland Cavaliers', teamAbbreviation: 'CLE', logoUrl: 'https://cdn.nba.com/logos/nba/1610612739/global/L/logo.svg', wins: 48, losses: 34, pct: '.585', gb: '1', streak: 'W3', last10: '7-3' },
+          { rank: 3, teamId: 'pacers', teamName: 'Indiana Pacers', teamAbbreviation: 'IND', logoUrl: 'https://cdn.nba.com/logos/nba/1610612754/global/L/logo.svg', wins: 47, losses: 35, pct: '.573', gb: '2', streak: 'W2', last10: '5-5' },
+          { rank: 4, teamId: 'bulls', teamName: 'Chicago Bulls', teamAbbreviation: 'CHI', logoUrl: 'https://cdn.nba.com/logos/nba/1610612741/global/L/logo.svg', wins: 39, losses: 43, pct: '.476', gb: '10', streak: 'L1', last10: '4-6' },
+          { rank: 5, teamId: 'pistons', teamName: 'Detroit Pistons', teamAbbreviation: 'DET', logoUrl: 'https://cdn.nba.com/logos/nba/1610612765/global/L/logo.svg', wins: 14, losses: 68, pct: '.171', gb: '35', streak: 'L5', last10: '1-9' },
+        ],
+      },
+      {
+        name: 'Southeast',
+        entries: [
+          { rank: 1, teamId: 'magic', teamName: 'Orlando Magic', teamAbbreviation: 'ORL', logoUrl: 'https://cdn.nba.com/logos/nba/1610612753/global/L/logo.svg', wins: 47, losses: 35, pct: '.573', gb: '—', streak: 'W2', last10: '6-4' },
+          { rank: 2, teamId: 'heat', teamName: 'Miami Heat', teamAbbreviation: 'MIA', logoUrl: 'https://cdn.nba.com/logos/nba/1610612748/global/L/logo.svg', wins: 46, losses: 36, pct: '.561', gb: '1', streak: 'L1', last10: '5-5' },
+          { rank: 3, teamId: 'hawks', teamName: 'Atlanta Hawks', teamAbbreviation: 'ATL', logoUrl: 'https://cdn.nba.com/logos/nba/1610612737/global/L/logo.svg', wins: 36, losses: 46, pct: '.439', gb: '11', streak: 'W1', last10: '4-6' },
+          { rank: 4, teamId: 'hornets', teamName: 'Charlotte Hornets', teamAbbreviation: 'CHA', logoUrl: 'https://cdn.nba.com/logos/nba/1610612766/global/L/logo.svg', wins: 21, losses: 61, pct: '.256', gb: '26', streak: 'L2', last10: '2-8' },
+          { rank: 5, teamId: 'wizards', teamName: 'Washington Wizards', teamAbbreviation: 'WAS', logoUrl: 'https://cdn.nba.com/logos/nba/1610612764/global/L/logo.svg', wins: 15, losses: 67, pct: '.183', gb: '32', streak: 'L4', last10: '2-8' },
+        ],
+      },
+      {
+        name: 'Northwest',
+        entries: [
+          { rank: 1, teamId: 'thunder', teamName: 'Oklahoma City Thunder', teamAbbreviation: 'OKC', logoUrl: 'https://cdn.nba.com/logos/nba/1610612760/global/L/logo.svg', wins: 57, losses: 25, pct: '.695', gb: '—', streak: 'W3', last10: '8-2' },
+          { rank: 2, teamId: 'timberwolves', teamName: 'Minnesota Timberwolves', teamAbbreviation: 'MIN', logoUrl: 'https://cdn.nba.com/logos/nba/1610612750/global/L/logo.svg', wins: 56, losses: 26, pct: '.683', gb: '1', streak: 'W2', last10: '8-2' },
+          { rank: 3, teamId: 'nuggets', teamName: 'Denver Nuggets', teamAbbreviation: 'DEN', logoUrl: 'https://cdn.nba.com/logos/nba/1610612743/global/L/logo.svg', wins: 57, losses: 25, pct: '.695', gb: '—', streak: 'W5', last10: '7-3' },
+          { rank: 4, teamId: 'jazz', teamName: 'Utah Jazz', teamAbbreviation: 'UTA', logoUrl: 'https://cdn.nba.com/logos/nba/1610612762/global/L/logo.svg', wins: 31, losses: 51, pct: '.378', gb: '26', streak: 'W1', last10: '4-6' },
+          { rank: 5, teamId: 'blazers', teamName: 'Portland Trail Blazers', teamAbbreviation: 'POR', logoUrl: 'https://cdn.nba.com/logos/nba/1610612757/global/L/logo.svg', wins: 21, losses: 61, pct: '.256', gb: '36', streak: 'L3', last10: '3-7' },
+        ],
+      },
+      {
+        name: 'Pacific',
+        entries: [
+          { rank: 1, teamId: 'clippers', teamName: 'LA Clippers', teamAbbreviation: 'LAC', logoUrl: 'https://cdn.nba.com/logos/nba/1610612746/global/L/logo.svg', wins: 51, losses: 31, pct: '.622', gb: '—', streak: 'W2', last10: '7-3' },
+          { rank: 2, teamId: 'lakers', teamName: 'Los Angeles Lakers', teamAbbreviation: 'LAL', logoUrl: 'https://cdn.nba.com/logos/nba/1610612747/global/L/logo.svg', wins: 47, losses: 35, pct: '.573', gb: '4', streak: 'W2', last10: '5-5' },
+          { rank: 3, teamId: 'kings', teamName: 'Sacramento Kings', teamAbbreviation: 'SAC', logoUrl: 'https://cdn.nba.com/logos/nba/1610612758/global/L/logo.svg', wins: 46, losses: 36, pct: '.561', gb: '5', streak: 'L1', last10: '5-5' },
+          { rank: 4, teamId: 'warriors', teamName: 'Golden State Warriors', teamAbbreviation: 'GSW', logoUrl: 'https://cdn.nba.com/logos/nba/1610612744/global/L/logo.svg', wins: 46, losses: 36, pct: '.561', gb: '5', streak: 'W1', last10: '5-5' },
+          { rank: 5, teamId: 'suns', teamName: 'Phoenix Suns', teamAbbreviation: 'PHX', logoUrl: 'https://cdn.nba.com/logos/nba/1610612756/global/L/logo.svg', wins: 49, losses: 33, pct: '.598', gb: '2', streak: 'L3', last10: '3-7' },
+        ],
+      },
+      {
+        name: 'Southwest',
+        entries: [
+          { rank: 1, teamId: 'mavericks', teamName: 'Dallas Mavericks', teamAbbreviation: 'DAL', logoUrl: 'https://cdn.nba.com/logos/nba/1610612742/global/L/logo.svg', wins: 50, losses: 32, pct: '.610', gb: '—', streak: 'W3', last10: '7-3' },
+          { rank: 2, teamId: 'pelicans', teamName: 'New Orleans Pelicans', teamAbbreviation: 'NOP', logoUrl: 'https://cdn.nba.com/logos/nba/1610612740/global/L/logo.svg', wins: 49, losses: 33, pct: '.598', gb: '1', streak: 'W2', last10: '6-4' },
+          { rank: 3, teamId: 'rockets', teamName: 'Houston Rockets', teamAbbreviation: 'HOU', logoUrl: 'https://cdn.nba.com/logos/nba/1610612745/global/L/logo.svg', wins: 41, losses: 41, pct: '.500', gb: '9', streak: 'L2', last10: '5-5' },
+          { rank: 4, teamId: 'grizzlies', teamName: 'Memphis Grizzlies', teamAbbreviation: 'MEM', logoUrl: 'https://cdn.nba.com/logos/nba/1610612763/global/L/logo.svg', wins: 27, losses: 55, pct: '.329', gb: '23', streak: 'W1', last10: '3-7' },
+          { rank: 5, teamId: 'spurs', teamName: 'San Antonio Spurs', teamAbbreviation: 'SAS', logoUrl: 'https://cdn.nba.com/logos/nba/1610612759/global/L/logo.svg', wins: 22, losses: 60, pct: '.268', gb: '28', streak: 'L4', last10: '2-8' },
+        ],
+      },
+    ],
+  },
+
+  NFL: {
+    leagueId: 'NFL',
+    lastUpdated: new Date().toISOString(),
+    groups: [
+      {
+        name: 'AFC East',
+        entries: [
+          { rank: 1, teamId: 'bills', teamName: 'Buffalo Bills', teamAbbreviation: 'BUF', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/giphcy6ie9mxbnldntsf', wins: 11, losses: 6, pct: '.647', gb: '—', streak: 'L1', last10: '6-4' },
+          { rank: 2, teamId: 'dolphins', teamName: 'Miami Dolphins', teamAbbreviation: 'MIA', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/lits6p8ycthy9to70bnt', wins: 11, losses: 6, pct: '.647', gb: '—', streak: 'W2', last10: '7-3' },
+          { rank: 3, teamId: 'jets', teamName: 'New York Jets', teamAbbreviation: 'NYJ', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/ekijosiae96gektbo4imu', wins: 7, losses: 10, pct: '.412', gb: '4', streak: 'L3', last10: '4-6' },
+          { rank: 4, teamId: 'patriots', teamName: 'New England Patriots', teamAbbreviation: 'NE', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/moyfxx3dq5pio4aiftnc', wins: 4, losses: 13, pct: '.235', gb: '7', streak: 'L5', last10: '2-8' },
+        ],
+      },
+      {
+        name: 'AFC North',
+        entries: [
+          { rank: 1, teamId: 'ravens', teamName: 'Baltimore Ravens', teamAbbreviation: 'BAL', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/ucsdijmddsqcj1i9tddd', wins: 13, losses: 4, pct: '.765', gb: '—', streak: 'W4', last10: '9-1' },
+          { rank: 2, teamId: 'browns', teamName: 'Cleveland Browns', teamAbbreviation: 'CLE', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/fgbn8acp4opvyxk13dcy', wins: 11, losses: 6, pct: '.647', gb: '2', streak: 'W1', last10: '6-4' },
+          { rank: 3, teamId: 'steelers', teamName: 'Pittsburgh Steelers', teamAbbreviation: 'PIT', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/xujg9t3t75jdc4nwjrap', wins: 10, losses: 7, pct: '.588', gb: '3', streak: 'W2', last10: '5-5' },
+          { rank: 4, teamId: 'bengals', teamName: 'Cincinnati Bengals', teamAbbreviation: 'CIN', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/pln44vuzugjgippenqpv', wins: 9, losses: 8, pct: '.529', gb: '4', streak: 'L2', last10: '5-5' },
+        ],
+      },
+      {
+        name: 'AFC South',
+        entries: [
+          { rank: 1, teamId: 'texans', teamName: 'Houston Texans', teamAbbreviation: 'HOU', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/bpx88i8nw4nnabuq0oob', wins: 10, losses: 7, pct: '.588', gb: '—', streak: 'W3', last10: '7-3' },
+          { rank: 2, teamId: 'jaguars', teamName: 'Jacksonville Jaguars', teamAbbreviation: 'JAX', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/qycnctrnddv8evd0oefc', wins: 9, losses: 8, pct: '.529', gb: '1', streak: 'W1', last10: '5-5' },
+          { rank: 3, teamId: 'colts', teamName: 'Indianapolis Colts', teamAbbreviation: 'IND', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/ketwqeuschqzjsllbid5', wins: 9, losses: 8, pct: '.529', gb: '1', streak: 'L1', last10: '5-5' },
+          { rank: 4, teamId: 'titans', teamName: 'Tennessee Titans', teamAbbreviation: 'TEN', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/pln44vuzugjgippenqpv', wins: 6, losses: 11, pct: '.353', gb: '4', streak: 'L3', last10: '3-7' },
+        ],
+      },
+      {
+        name: 'AFC West',
+        entries: [
+          { rank: 1, teamId: 'chiefs', teamName: 'Kansas City Chiefs', teamAbbreviation: 'KC', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/ujshjqvmnxce8m4obmvs', wins: 11, losses: 6, pct: '.647', gb: '—', streak: 'W3', last10: '7-3' },
+          { rank: 2, teamId: 'raiders', teamName: 'Las Vegas Raiders', teamAbbreviation: 'LV', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/gkpnk9qlgqadfiqn78c3', wins: 8, losses: 9, pct: '.471', gb: '3', streak: 'W1', last10: '5-5' },
+          { rank: 3, teamId: 'broncos', teamName: 'Denver Broncos', teamAbbreviation: 'DEN', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/naqjfjfq7ywbn7pblhca', wins: 8, losses: 9, pct: '.471', gb: '3', streak: 'L2', last10: '4-6' },
+          { rank: 4, teamId: 'chargers', teamName: 'LA Chargers', teamAbbreviation: 'LAC', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/dhfidtn8f7vd4tylyf9j', wins: 5, losses: 12, pct: '.294', gb: '6', streak: 'L4', last10: '2-8' },
+        ],
+      },
+      {
+        name: 'NFC East',
+        entries: [
+          { rank: 1, teamId: 'cowboys', teamName: 'Dallas Cowboys', teamAbbreviation: 'DAL', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/ieid8hoygzdlmzo0tnf6', wins: 12, losses: 5, pct: '.706', gb: '—', streak: 'W2', last10: '8-2' },
+          { rank: 2, teamId: 'eagles', teamName: 'Philadelphia Eagles', teamAbbreviation: 'PHI', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/cp9nhsre3mxp8fhc4hj0', wins: 11, losses: 6, pct: '.647', gb: '1', streak: 'W4', last10: '8-2' },
+          { rank: 3, teamId: 'giants', teamName: 'New York Giants', teamAbbreviation: 'NYG', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/t6mhdmgizi6qhndh8b9p', wins: 6, losses: 11, pct: '.353', gb: '6', streak: 'L2', last10: '4-6' },
+          { rank: 4, teamId: 'commanders', teamName: 'Washington Commanders', teamAbbreviation: 'WSH', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/xymxwrxtyj9tg5cyxcbq', wins: 4, losses: 13, pct: '.235', gb: '8', streak: 'L3', last10: '2-8' },
+        ],
+      },
+      {
+        name: 'NFC North',
+        entries: [
+          { rank: 1, teamId: 'lions', teamName: 'Detroit Lions', teamAbbreviation: 'DET', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/ocvxnidgkgfgpblqyf1f', wins: 12, losses: 5, pct: '.706', gb: '—', streak: 'W3', last10: '8-2' },
+          { rank: 2, teamId: 'packers', teamName: 'Green Bay Packers', teamAbbreviation: 'GB', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/pjohle3e3oioo5ykjpfj', wins: 9, losses: 8, pct: '.529', gb: '3', streak: 'W2', last10: '6-4' },
+          { rank: 3, teamId: 'vikings', teamName: 'Minnesota Vikings', teamAbbreviation: 'MIN', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/teguylrnqqmfcwxppavs', wins: 7, losses: 10, pct: '.412', gb: '5', streak: 'L1', last10: '5-5' },
+          { rank: 4, teamId: 'bears', teamName: 'Chicago Bears', teamAbbreviation: 'CHI', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/ra0poq2ivwyahbaq86d6', wins: 7, losses: 10, pct: '.412', gb: '5', streak: 'W1', last10: '4-6' },
+        ],
+      },
+      {
+        name: 'NFC South',
+        entries: [
+          { rank: 1, teamId: 'saints', teamName: 'New Orleans Saints', teamAbbreviation: 'NO', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/grhjkahghjkk17xtggyd', wins: 9, losses: 8, pct: '.529', gb: '—', streak: 'W1', last10: '5-5' },
+          { rank: 2, teamId: 'buccaneers', teamName: 'Tampa Bay Buccaneers', teamAbbreviation: 'TB', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/v8uqiualryypwqgvwmhf', wins: 9, losses: 8, pct: '.529', gb: '—', streak: 'L1', last10: '5-5' },
+          { rank: 3, teamId: 'falcons', teamName: 'Atlanta Falcons', teamAbbreviation: 'ATL', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/d8m7pzddn2ghhp4b4mj7', wins: 7, losses: 10, pct: '.412', gb: '2', streak: 'L2', last10: '4-6' },
+          { rank: 4, teamId: 'panthers', teamName: 'Carolina Panthers', teamAbbreviation: 'CAR', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/lnvhhkp7idikqawfrqkx', wins: 2, losses: 15, pct: '.118', gb: '7', streak: 'L7', last10: '1-9' },
+        ],
+      },
+      {
+        name: 'NFC West',
+        entries: [
+          { rank: 1, teamId: '49ers', teamName: 'San Francisco 49ers', teamAbbreviation: 'SF', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/rwnh7i7uybv4fltpqhpq', wins: 12, losses: 5, pct: '.706', gb: '—', streak: 'W5', last10: '8-2' },
+          { rank: 2, teamId: 'rams', teamName: 'Los Angeles Rams', teamAbbreviation: 'LAR', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/ayvwcmluj2ohc87ov9fh', wins: 10, losses: 7, pct: '.588', gb: '2', streak: 'W2', last10: '6-4' },
+          { rank: 3, teamId: 'seahawks', teamName: 'Seattle Seahawks', teamAbbreviation: 'SEA', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/gcytzwpjdzbpwnwxincg', wins: 9, losses: 8, pct: '.529', gb: '3', streak: 'W1', last10: '5-5' },
+          { rank: 4, teamId: 'cardinals', teamName: 'Arizona Cardinals', teamAbbreviation: 'ARI', logoUrl: 'https://static.www.nfl.com/image/private/f_auto/league/u9fltublqczdbyu6eluq', wins: 4, losses: 13, pct: '.235', gb: '8', streak: 'L4', last10: '2-8' },
+        ],
+      },
+    ],
+  },
+
+  MLB: {
+    leagueId: 'MLB',
+    lastUpdated: new Date().toISOString(),
+    groups: [
+      {
+        name: 'AL East',
+        entries: [
+          { rank: 1, teamId: 'yankees', teamName: 'New York Yankees', teamAbbreviation: 'NYY', logoUrl: 'https://www.mlbstatic.com/team-logos/147.svg', wins: 94, losses: 68, pct: '.580', gb: '—', streak: 'W3', last10: '6-4' },
+          { rank: 2, teamId: 'orioles', teamName: 'Baltimore Orioles', teamAbbreviation: 'BAL', logoUrl: 'https://www.mlbstatic.com/team-logos/110.svg', wins: 91, losses: 71, pct: '.562', gb: '3', streak: 'W1', last10: '6-4' },
+          { rank: 3, teamId: 'redsox', teamName: 'Boston Red Sox', teamAbbreviation: 'BOS', logoUrl: 'https://www.mlbstatic.com/team-logos/111.svg', wins: 81, losses: 81, pct: '.500', gb: '13', streak: 'L1', last10: '5-5' },
+          { rank: 4, teamId: 'bluejays', teamName: 'Toronto Blue Jays', teamAbbreviation: 'TOR', logoUrl: 'https://www.mlbstatic.com/team-logos/141.svg', wins: 74, losses: 88, pct: '.457', gb: '20', streak: 'L3', last10: '4-6' },
+          { rank: 5, teamId: 'rays', teamName: 'Tampa Bay Rays', teamAbbreviation: 'TB', logoUrl: 'https://www.mlbstatic.com/team-logos/139.svg', wins: 80, losses: 82, pct: '.494', gb: '14', streak: 'W2', last10: '5-5' },
+        ],
+      },
+      {
+        name: 'AL Central',
+        entries: [
+          { rank: 1, teamId: 'guardians', teamName: 'Cleveland Guardians', teamAbbreviation: 'CLE', logoUrl: 'https://www.mlbstatic.com/team-logos/114.svg', wins: 92, losses: 69, pct: '.571', gb: '—', streak: 'W4', last10: '7-3' },
+          { rank: 2, teamId: 'tigers', teamName: 'Detroit Tigers', teamAbbreviation: 'DET', logoUrl: 'https://www.mlbstatic.com/team-logos/116.svg', wins: 86, losses: 76, pct: '.531', gb: '6', streak: 'W1', last10: '6-4' },
+          { rank: 3, teamId: 'royals', teamName: 'Kansas City Royals', teamAbbreviation: 'KC', logoUrl: 'https://www.mlbstatic.com/team-logos/118.svg', wins: 86, losses: 76, pct: '.531', gb: '6', streak: 'L1', last10: '5-5' },
+          { rank: 4, teamId: 'twins', teamName: 'Minnesota Twins', teamAbbreviation: 'MIN', logoUrl: 'https://www.mlbstatic.com/team-logos/142.svg', wins: 82, losses: 80, pct: '.506', gb: '10', streak: 'W2', last10: '5-5' },
+          { rank: 5, teamId: 'whitesox', teamName: 'Chicago White Sox', teamAbbreviation: 'CWS', logoUrl: 'https://www.mlbstatic.com/team-logos/145.svg', wins: 41, losses: 121, pct: '.253', gb: '51', streak: 'L6', last10: '1-9' },
+        ],
+      },
+      {
+        name: 'AL West',
+        entries: [
+          { rank: 1, teamId: 'astros', teamName: 'Houston Astros', teamAbbreviation: 'HOU', logoUrl: 'https://www.mlbstatic.com/team-logos/117.svg', wins: 88, losses: 74, pct: '.543', gb: '—', streak: 'W2', last10: '6-4' },
+          { rank: 2, teamId: 'mariners', teamName: 'Seattle Mariners', teamAbbreviation: 'SEA', logoUrl: 'https://www.mlbstatic.com/team-logos/136.svg', wins: 85, losses: 77, pct: '.525', gb: '3', streak: 'L1', last10: '5-5' },
+          { rank: 3, teamId: 'rangers', teamName: 'Texas Rangers', teamAbbreviation: 'TEX', logoUrl: 'https://www.mlbstatic.com/team-logos/140.svg', wins: 78, losses: 84, pct: '.481', gb: '10', streak: 'W1', last10: '5-5' },
+          { rank: 4, teamId: 'athletics', teamName: 'Oakland Athletics', teamAbbreviation: 'OAK', logoUrl: 'https://www.mlbstatic.com/team-logos/133.svg', wins: 69, losses: 93, pct: '.426', gb: '19', streak: 'L2', last10: '4-6' },
+          { rank: 5, teamId: 'angels', teamName: 'Los Angeles Angels', teamAbbreviation: 'LAA', logoUrl: 'https://www.mlbstatic.com/team-logos/108.svg', wins: 63, losses: 99, pct: '.389', gb: '25', streak: 'L3', last10: '3-7' },
+        ],
+      },
+      {
+        name: 'NL East',
+        entries: [
+          { rank: 1, teamId: 'phillies', teamName: 'Philadelphia Phillies', teamAbbreviation: 'PHI', logoUrl: 'https://www.mlbstatic.com/team-logos/143.svg', wins: 95, losses: 67, pct: '.586', gb: '—', streak: 'W3', last10: '7-3' },
+          { rank: 2, teamId: 'braves', teamName: 'Atlanta Braves', teamAbbreviation: 'ATL', logoUrl: 'https://www.mlbstatic.com/team-logos/144.svg', wins: 89, losses: 73, pct: '.549', gb: '6', streak: 'W1', last10: '5-5' },
+          { rank: 3, teamId: 'mets', teamName: 'New York Mets', teamAbbreviation: 'NYM', logoUrl: 'https://www.mlbstatic.com/team-logos/121.svg', wins: 89, losses: 73, pct: '.549', gb: '6', streak: 'W2', last10: '6-4' },
+          { rank: 4, teamId: 'nationals', teamName: 'Washington Nationals', teamAbbreviation: 'WSH', logoUrl: 'https://www.mlbstatic.com/team-logos/120.svg', wins: 71, losses: 91, pct: '.438', gb: '24', streak: 'L2', last10: '4-6' },
+          { rank: 5, teamId: 'marlins', teamName: 'Miami Marlins', teamAbbreviation: 'MIA', logoUrl: 'https://www.mlbstatic.com/team-logos/146.svg', wins: 62, losses: 100, pct: '.383', gb: '33', streak: 'L4', last10: '2-8' },
+        ],
+      },
+      {
+        name: 'NL Central',
+        entries: [
+          { rank: 1, teamId: 'brewers', teamName: 'Milwaukee Brewers', teamAbbreviation: 'MIL', logoUrl: 'https://www.mlbstatic.com/team-logos/158.svg', wins: 93, losses: 69, pct: '.574', gb: '—', streak: 'W2', last10: '6-4' },
+          { rank: 2, teamId: 'cubs', teamName: 'Chicago Cubs', teamAbbreviation: 'CHC', logoUrl: 'https://www.mlbstatic.com/team-logos/112.svg', wins: 83, losses: 79, pct: '.512', gb: '10', streak: 'W1', last10: '5-5' },
+          { rank: 3, teamId: 'cardinals', teamName: 'St. Louis Cardinals', teamAbbreviation: 'STL', logoUrl: 'https://www.mlbstatic.com/team-logos/138.svg', wins: 83, losses: 79, pct: '.512', gb: '10', streak: 'L1', last10: '5-5' },
+          { rank: 4, teamId: 'pirates', teamName: 'Pittsburgh Pirates', teamAbbreviation: 'PIT', logoUrl: 'https://www.mlbstatic.com/team-logos/134.svg', wins: 76, losses: 86, pct: '.469', gb: '17', streak: 'L2', last10: '4-6' },
+          { rank: 5, teamId: 'reds', teamName: 'Cincinnati Reds', teamAbbreviation: 'CIN', logoUrl: 'https://www.mlbstatic.com/team-logos/113.svg', wins: 77, losses: 85, pct: '.475', gb: '16', streak: 'W3', last10: '6-4' },
+        ],
+      },
+      {
+        name: 'NL West',
+        entries: [
+          { rank: 1, teamId: 'dodgers', teamName: 'Los Angeles Dodgers', teamAbbreviation: 'LAD', logoUrl: 'https://www.mlbstatic.com/team-logos/119.svg', wins: 98, losses: 64, pct: '.605', gb: '—', streak: 'W1', last10: '7-3' },
+          { rank: 2, teamId: 'padres', teamName: 'San Diego Padres', teamAbbreviation: 'SD', logoUrl: 'https://www.mlbstatic.com/team-logos/135.svg', wins: 93, losses: 69, pct: '.574', gb: '5', streak: 'W2', last10: '7-3' },
+          { rank: 3, teamId: 'dbacks', teamName: 'Arizona Diamondbacks', teamAbbreviation: 'ARI', logoUrl: 'https://www.mlbstatic.com/team-logos/109.svg', wins: 89, losses: 73, pct: '.549', gb: '9', streak: 'L1', last10: '5-5' },
+          { rank: 4, teamId: 'giants', teamName: 'San Francisco Giants', teamAbbreviation: 'SF', logoUrl: 'https://www.mlbstatic.com/team-logos/137.svg', wins: 80, losses: 82, pct: '.494', gb: '18', streak: 'L1', last10: '5-5' },
+          { rank: 5, teamId: 'rockies', teamName: 'Colorado Rockies', teamAbbreviation: 'COL', logoUrl: 'https://www.mlbstatic.com/team-logos/115.svg', wins: 61, losses: 101, pct: '.377', gb: '37', streak: 'L5', last10: '2-8' },
+        ],
+      },
+    ],
+  },
+
+  NHL: {
+    leagueId: 'NHL',
+    lastUpdated: new Date().toISOString(),
+    groups: [
+      {
+        name: 'Metropolitan',
+        entries: [
+          { rank: 1, teamId: 'rangers', teamName: 'New York Rangers', teamAbbreviation: 'NYR', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/NYR_light.svg', wins: 55, losses: 20, draws: 7, pct: '.713', gb: '—', streak: 'W2', last10: '7-3' },
+          { rank: 2, teamId: 'hurricanes', teamName: 'Carolina Hurricanes', teamAbbreviation: 'CAR', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/CAR_light.svg', wins: 46, losses: 27, draws: 9, pct: '.622', gb: '8', streak: 'W1', last10: '6-4' },
+          { rank: 3, teamId: 'nj-devils', teamName: 'New Jersey Devils', teamAbbreviation: 'NJD', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/NJD_light.svg', wins: 44, losses: 27, draws: 11, pct: '.610', gb: '9', streak: 'L1', last10: '5-5' },
+          { rank: 4, teamId: 'islanders', teamName: 'New York Islanders', teamAbbreviation: 'NYI', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/NYI_light.svg', wins: 38, losses: 37, draws: 7, pct: '.506', gb: '17', streak: 'W2', last10: '5-5' },
+          { rank: 5, teamId: 'flyers', teamName: 'Philadelphia Flyers', teamAbbreviation: 'PHI', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/PHI_light.svg', wins: 38, losses: 31, draws: 13, pct: '.543', gb: '14', streak: 'L2', last10: '4-6' },
+        ],
+      },
+      {
+        name: 'Atlantic',
+        entries: [
+          { rank: 1, teamId: 'bruins', teamName: 'Boston Bruins', teamAbbreviation: 'BOS', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/BOS_light.svg', wins: 52, losses: 19, draws: 11, pct: '.707', gb: '—', streak: 'W3', last10: '8-2' },
+          { rank: 2, teamId: 'panthers', teamName: 'Florida Panthers', teamAbbreviation: 'FLA', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/FLA_light.svg', wins: 52, losses: 24, draws: 6, pct: '.659', gb: '3', streak: 'W2', last10: '7-3' },
+          { rank: 3, teamId: 'maple-leafs', teamName: 'Toronto Maple Leafs', teamAbbreviation: 'TOR', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/TOR_light.svg', wins: 46, losses: 25, draws: 11, pct: '.634', gb: '5', streak: 'W1', last10: '6-4' },
+          { rank: 4, teamId: 'lightning', teamName: 'Tampa Bay Lightning', teamAbbreviation: 'TBL', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/TBL_light.svg', wins: 45, losses: 29, draws: 8, pct: '.598', gb: '8', streak: 'L1', last10: '5-5' },
+          { rank: 5, teamId: 'red-wings', teamName: 'Detroit Red Wings', teamAbbreviation: 'DET', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/DET_light.svg', wins: 41, losses: 28, draws: 13, pct: '.591', gb: '9', streak: 'W2', last10: '6-4' },
+        ],
+      },
+      {
+        name: 'Central',
+        entries: [
+          { rank: 1, teamId: 'stars', teamName: 'Dallas Stars', teamAbbreviation: 'DAL', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/DAL_light.svg', wins: 52, losses: 21, draws: 9, pct: '.695', gb: '—', streak: 'W4', last10: '8-2' },
+          { rank: 2, teamId: 'jets', teamName: 'Winnipeg Jets', teamAbbreviation: 'WPG', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/WPG_light.svg', wins: 52, losses: 24, draws: 6, pct: '.659', gb: '2', streak: 'W2', last10: '7-3' },
+          { rank: 3, teamId: 'avalanche', teamName: 'Colorado Avalanche', teamAbbreviation: 'COL', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/COL_light.svg', wins: 50, losses: 17, draws: 15, pct: '.707', gb: '1', streak: 'W3', last10: '8-2' },
+          { rank: 4, teamId: 'predators', teamName: 'Nashville Predators', teamAbbreviation: 'NSH', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/NSH_light.svg', wins: 44, losses: 31, draws: 7, pct: '.573', gb: '8', streak: 'L1', last10: '5-5' },
+          { rank: 5, teamId: 'wild', teamName: 'Minnesota Wild', teamAbbreviation: 'MIN', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/MIN_light.svg', wins: 39, losses: 28, draws: 15, pct: '.573', gb: '8', streak: 'W1', last10: '5-5' },
+        ],
+      },
+      {
+        name: 'Pacific',
+        entries: [
+          { rank: 1, teamId: 'golden-knights', teamName: 'Vegas Golden Knights', teamAbbreviation: 'VGK', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/VGK_light.svg', wins: 47, losses: 22, draws: 13, pct: '.652', gb: '—', streak: 'W2', last10: '6-4' },
+          { rank: 2, teamId: 'canucks', teamName: 'Vancouver Canucks', teamAbbreviation: 'VAN', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/VAN_light.svg', wins: 50, losses: 23, draws: 9, pct: '.671', gb: '—', streak: 'W3', last10: '7-3' },
+          { rank: 3, teamId: 'oilers', teamName: 'Edmonton Oilers', teamAbbreviation: 'EDM', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/EDM_light.svg', wins: 49, losses: 27, draws: 6, pct: '.646', gb: '1', streak: 'W2', last10: '7-3' },
+          { rank: 4, teamId: 'kings', teamName: 'Los Angeles Kings', teamAbbreviation: 'LAK', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/LAK_light.svg', wins: 44, losses: 27, draws: 11, pct: '.610', gb: '5', streak: 'L1', last10: '5-5' },
+          { rank: 5, teamId: 'flames', teamName: 'Calgary Flames', teamAbbreviation: 'CGY', logoUrl: 'https://assets.nhle.com/logos/nhl/svg/CGY_light.svg', wins: 38, losses: 36, draws: 8, pct: '.512', gb: '11', streak: 'L2', last10: '4-6' },
+        ],
+      },
+    ],
+  },
+}

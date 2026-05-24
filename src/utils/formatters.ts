@@ -36,6 +36,47 @@ export function getStatusLabel(status: string): string {
   }
 }
 
+export function formatDateShort(date: Date): string {
+  const today = new Date()
+  const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1)
+  const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1)
+  const isSameDay = (a: Date, b: Date) =>
+    a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate()
+
+  if (isSameDay(date, today)) return 'Today'
+  if (isSameDay(date, yesterday)) return 'Yesterday'
+  if (isSameDay(date, tomorrow)) return 'Tomorrow'
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+export function dateToYmd(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}${m}${d}`
+}
+
+export function todayYmd(): string {
+  return dateToYmd(new Date())
+}
+
+function americanToImplied(odds: string): number {
+  const n = parseFloat(odds)
+  if (isNaN(n)) return 50
+  return n < 0 ? Math.abs(n) / (Math.abs(n) + 100) * 100 : 100 / (n + 100) * 100
+}
+
+export function getWinProbabilities(homeML: string, awayML: string): { home: number; away: number } {
+  const rawHome = americanToImplied(homeML)
+  const rawAway = americanToImplied(awayML)
+  const total = rawHome + rawAway
+  if (total === 0) return { home: 50, away: 50 }
+  return {
+    home: Math.round((rawHome / total) * 100),
+    away: Math.round((rawAway / total) * 100),
+  }
+}
+
 export function getStatusColor(status: string): string {
   switch (status) {
     case 'live': return 'text-green-400 bg-green-400/10 ring-green-400/30'

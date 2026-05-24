@@ -7,6 +7,7 @@ import {
   SignalIcon,
   FunnelIcon,
   ArrowsUpDownIcon,
+  TableCellsIcon,
 } from '@heroicons/react/24/outline'
 import { TrophyIcon as TrophyIconSolid } from '@heroicons/react/24/solid'
 import type { FilterState, LeagueId } from '../types'
@@ -22,6 +23,7 @@ interface Props {
   onToggleLiveOnly: () => void
   onSetSortBy: (s: FilterState['sortBy']) => void
   onReset: () => void
+  onOpenStandings: () => void
   totalGames: number
   liveCount: number
   favoritesCount: number
@@ -34,7 +36,7 @@ const sortOptions: { value: FilterState['sortBy']; label: string }[] = [
   { value: 'tickets', label: 'Ticket Price' },
 ]
 
-function SidebarContent({ filters, onToggleLeague, onSetSearch, onToggleFavoritesOnly, onToggleLiveOnly, onSetSortBy, onReset, totalGames, liveCount, favoritesCount }: Props) {
+function SidebarContent({ filters, onToggleLeague, onSetSearch, onToggleFavoritesOnly, onToggleLiveOnly, onSetSortBy, onReset, onOpenStandings, totalGames, liveCount, favoritesCount }: Props) {
   return (
     <div className="flex grow flex-col gap-y-5 overflow-y-auto px-5 pb-4">
       {/* Logo */}
@@ -127,8 +129,15 @@ function SidebarContent({ filters, onToggleLeague, onSetSearch, onToggleFavorite
         </div>
       </div>
 
-      {/* Reset */}
-      <div className="mt-auto">
+      {/* Reset + Standings */}
+      <div className="mt-auto space-y-2">
+        <button
+          onClick={onOpenStandings}
+          className="flex w-full items-center justify-center gap-1.5 rounded-lg bg-indigo-600/15 border border-indigo-500/30 py-2 text-sm text-indigo-400 hover:bg-indigo-600/25 hover:border-indigo-400/50 transition-colors"
+        >
+          <TableCellsIcon className="size-4" />
+          Standings
+        </button>
         <button
           onClick={onReset}
           className="flex w-full items-center justify-center gap-1.5 rounded-lg border border-gray-700 py-2 text-sm text-gray-500 hover:border-gray-600 hover:text-gray-300 transition-colors"
@@ -153,6 +162,7 @@ export default function Sidebar(props: Props) {
     onToggleLiveOnly: () => { props.onToggleLiveOnly(); closeMobile() },
     onSetSortBy: (s) => { props.onSetSortBy(s); closeMobile() },
     onReset: () => { props.onReset(); closeMobile() },
+    onOpenStandings: () => { props.onOpenStandings(); closeMobile() },
   }
 
   return (

@@ -6,7 +6,7 @@ import OddsTable from './OddsTable'
 import TicketPriceCard from './TicketPriceCard'
 import FavoriteTeamButton from './FavoriteTeamButton'
 import LineupSection from './LineupSection'
-import { formatGameTime, getStatusColor, getStatusLabel, classNames } from '../utils/formatters'
+import { formatGameTime, getStatusColor, getStatusLabel, classNames, getWinProbabilities } from '../utils/formatters'
 import { LEAGUE_COLORS } from '../data/mockData'
 import { useGameSummary } from '../hooks/useGameSummary'
 
@@ -201,6 +201,36 @@ function GameDetailsModalInner({ game, open, onClose, isFavoriteHome, isFavorite
                       {isLive && game.period ? `${game.period}${game.clock ? ` · ${game.clock}` : ''}` : getStatusLabel(game.status)}
                     </span>
                   </div>
+
+                  {/* Win Probability Bar */}
+                  {(() => {
+                    const odds = game.odds?.[0]
+                    if (!odds) return null
+                    const { home, away } = getWinProbabilities(odds.moneyline.home, odds.moneyline.away)
+                    return (
+                      <div className="mb-4 rounded-lg bg-gray-800/40 px-4 py-3">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-600 mb-2 text-center">Win Probability</p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs font-bold text-gray-300 w-8 text-right tabular-nums">{away}%</span>
+                          <div className="flex-1 flex h-2.5 rounded-full overflow-hidden bg-gray-700">
+                            <div
+                              className="h-full rounded-l-full transition-all duration-500"
+                              style={{ width: `${away}%`, backgroundColor: game.awayTeam.primaryColor }}
+                            />
+                            <div
+                              className="h-full rounded-r-full transition-all duration-500"
+                              style={{ width: `${home}%`, backgroundColor: game.homeTeam.primaryColor }}
+                            />
+                          </div>
+                          <span className="text-xs font-bold text-gray-300 w-8 tabular-nums">{home}%</span>
+                        </div>
+                        <div className="flex justify-between mt-1">
+                          <span className="text-[10px] text-gray-600">{game.awayTeam.abbreviation}</span>
+                          <span className="text-[10px] text-gray-600">{game.homeTeam.abbreviation}</span>
+                        </div>
+                      </div>
+                    )
+                  })()}
 
                   {/* Matchup */}
                   <div className="flex items-center justify-between gap-4">

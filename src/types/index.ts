@@ -138,3 +138,35 @@ export interface FilterState {
   liveOnly: boolean
   sortBy: 'time' | 'league' | 'odds' | 'tickets'
 }
+
+export type ViewMode = 'grid' | 'list'
+
+export type ScheduleView = 'day' | 'upcoming' | 'nextPerTeam'
+
+export type UpcomingWindow = 3 | 7 | 14 | 30
+
+export interface StandingEntry {
+  rank: number
+  teamId: string
+  teamName: string
+  teamAbbreviation: string
+  logoUrl?: string
+  wins: number
+  losses: number
+  draws?: number
+  pct?: string
+  gb?: string
+  streak?: string
+  last10?: string
+}
+
+export interface StandingsGroup {
+  name: string
+  entries: StandingEntry[]
+}
+
+export interface LeagueStandings {
+  leagueId: LeagueId
+  lastUpdated: string
+  groups: StandingsGroup[]
+}

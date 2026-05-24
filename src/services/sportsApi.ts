@@ -48,6 +48,15 @@ function todayYmd(): string {
   return `${y}${m}${day}`
 }
 
+function ymdNDaysAhead(n: number): string {
+  const d = new Date()
+  d.setDate(d.getDate() + n)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}${m}${day}`
+}
+
 function isToday(iso: string): boolean {
   const d = new Date(iso)
   const now = new Date()
@@ -58,15 +67,24 @@ function isToday(iso: string): boolean {
   )
 }
 
+function isWithinDaysAhead(iso: string, daysAhead: number): boolean {
+  const d = new Date(iso).getTime()
+  const start = new Date(); start.setHours(0, 0, 0, 0)
+  const end = new Date(); end.setDate(end.getDate() + daysAhead); end.setHours(23, 59, 59, 999)
+  return d >= start.getTime() && d <= end.getTime()
+}
+
 // ── Scoreboard ────────────────────────────────────────────────
 
-export async function fetchTodaysGames(): Promise<Game[]> {
+export async function fetchTodaysGames(dateYmd?: string): Promise<Game[]> {
+  const ymd = dateYmd ?? todayYmd()
+  const requestingToday = ymd === todayYmd()
+
   if (USE_MOCK) {
     await new Promise((r) => setTimeout(r, 600))
+    if (!requestingToday) return []
     return MOCK_GAMES.filter((g) => isToday(g.startTime))
   }
-
-  const ymd = todayYmd()
 
   try {
     const results = await Promise.allSettled(
@@ -80,22 +98,67 @@ export async function fetchTodaysGames(): Promise<Game[]> {
       if (result.status === 'fulfilled') games.push(...result.value)
     }
 
-    const todayGames = games.filter((g) => isToday(g.startTime))
-    if (todayGames.length === 0) {
+    const dateGames = requestingToday ? games.filter((g) => isToday(g.startTime)) : games
+    if (requestingToday && dateGames.length === 0) {
       // No real games today — fall back to mock data so the dashboard isn't empty.
       return MOCK_GAMES.filter((g) => isToday(g.startTime))
     }
 
-    // Enrich with multi-book odds from The Odds API (only when a key is configured
-    // and we don't already have rich multi-book odds from ESPN).
-    await Promise.all([
-      enrichOdds(todayGames),
-      enrichWeather(todayGames),
-      enrichTickets(todayGames),
-    ])
-    return todayGames
+    if (dateGames.length > 0) {
+      // Enrich with multi-book odds from The Odds API (only when a key is configured
+      // and we don't already have rich multi-book odds from ESPN).
+      await Promise.all([
+        enrichOdds(dateGames),
+        enrichWeather(dateGames),
+        enrichTickets(dateGames),
+      ])
+    }
+    return dateGames
   } catch {
-    return MOCK_GAMES.filter((g) => isToday(g.startTime))
+    if (requestingToday) return MOCK_GAMES.filter((g) => isToday(g.startTime))
+    return []
+  }
+}
+
+export async function fetchGamesInRange(daysAhead: number): Promise<Game[]> {
+  if (USE_MOCK) {
+    await new Promise((r) => setTimeout(r, 600))
+    return MOCK_GAMES.filter((g) => isWithinDaysAhead(g.startTime, daysAhead))
+  }
+
+  const start = todayYmd()
+  const end = ymdNDaysAhead(daysAhead)
+  const range = `${start}-${end}`
+
+  try {
+    const results = await Promise.allSettled(
+      ENDPOINTS.map(({ url, leagueId }) =>
+        axios.get(url, { params: { dates: range, limit: 1000 } }).then((res) => parseEspnScoreboard(res.data, leagueId)),
+      ),
+    )
+
+    const games: Game[] = []
+    for (const result of results) {
+      if (result.status === 'fulfilled') games.push(...result.value)
+    }
+
+    const inRange = games.filter((g) => isWithinDaysAhead(g.startTime, daysAhead))
+    if (inRange.length === 0) {
+      return MOCK_GAMES.filter((g) => isWithinDaysAhead(g.startTime, daysAhead))
+    }
+
+    // Enrich only games happening within ~36 hours to keep network cost bounded.
+    const enrichWindow = inRange.filter((g) => isWithinDaysAhead(g.startTime, 1))
+    if (enrichWindow.length > 0) {
+      await Promise.all([
+        enrichOdds(enrichWindow),
+        enrichWeather(enrichWindow),
+        enrichTickets(enrichWindow),
+      ])
+    }
+    return inRange
+  } catch {
+    return MOCK_GAMES.filter((g) => isWithinDaysAhead(g.startTime, daysAhead))
   }
 }
 
