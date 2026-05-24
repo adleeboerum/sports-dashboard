@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>GameDay Hub — Visual Project Map</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root {
+    --bg: #0b1020;
+    --panel: #131a32;
+    --panel-2: #1a2244;
+    --line: #2b3563;
+    --ink: #e8ecff;
+    --dim: #9aa3c7;
+    --accent: #7c9cff;
+    --accent-2: #ffd479;
+    --green: #6ee7b7;
+    --red: #ff8aa7;
+    --orange: #ffb86b;
+    --pink: #ff8ad8;
+    --blue: #79c8ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif; }
+  a { color: var(--accent); }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 24px 80px; }
+  header.hero {
+    background: radial-gradient(1200px 400px at 20% -10%, #2a3a82 0%, transparent 60%),
+                radial-gradient(900px 350px at 90% 10%, #6b3a82 0%, transparent 60%),
+                var(--panel);
+    border: 1px solid var(--line); border-radius: 18px; padding: 28px 28px 24px; margin-bottom: 28px;
+  }
+  header.hero h1 { margin: 0 0 8px; font-size: 30px; letter-spacing: -0.01em; }
+  header.hero p  { margin: 0; color: var(--dim); max-width: 800px; }
+  nav.toc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 18px; }
+  nav.toc a {
+    background: rgba(255,255,255,0.05); border: 1px solid var(--line); padding: 6px 12px;
+    border-radius: 999px; font-size: 13px; text-decoration: none; color: var(--ink);
+  }
+  nav.toc a:hover { background: rgba(255,255,255,0.1); }
+
+  section.card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 22px 24px; margin-bottom: 22px; }
+  section.card h2 { margin: 0 0 14px; font-size: 20px; }
+  section.card h2 .num { color: var(--accent); margin-right: 8px; font-variant-numeric: tabular-nums; }
+  section.card .lead { color: var(--dim); margin: -4px 0 16px; }
+
+  .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--dim); margin-top: 10px; }
+  .legend .swatch { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+  /* Diagrams use a flex grid */
+  .row { display: grid; gap: 12px; }
+  .row.cols-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+  .row.cols-4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+  .row.cols-5 { grid-template-columns: repeat(5, minmax(0,1fr)); }
+  @media (max-width: 800px) {
+    .row.cols-3, .row.cols-4, .row.cols-5 { grid-template-columns: 1fr 1fr; }
+  }
+
+  .box {
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 12px 14px; position: relative;
+  }
+  .box .title { font-weight: 600; font-size: 14px; }
+  .box .subtitle { color: var(--dim); font-size: 12px; margin-top: 4px; }
+  .box.ui { border-color: rgba(121,200,255,0.45); background: linear-gradient(180deg, rgba(121,200,255,0.10), transparent), var(--panel-2); }
+  .box.logic { border-color: rgba(255,184,107,0.45); background: linear-gradient(180deg, rgba(255,184,107,0.10), transparent), var(--panel-2); }
+  .box.data { border-color: rgba(110,231,183,0.45); background: linear-gradient(180deg, rgba(110,231,183,0.10), transparent), var(--panel-2); }
+  .box.shape { border-color: rgba(255,138,216,0.45); background: linear-gradient(180deg, rgba(255,138,216,0.10), transparent), var(--panel-2); }
+  .box.user { border-color: rgba(124,156,255,0.55); background: linear-gradient(180deg, rgba(124,156,255,0.18), transparent), var(--panel-2); }
+
+  .col-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); margin-bottom: 6px; }
+
+  /* The pipeline (data flow) */
+  .pipeline { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; align-items: stretch; }
+  .pipeline .stage {
+    background: var(--panel-2); border: 1px solid var(--line); padding: 14px 12px; position: relative;
+  }
+  .pipeline .stage:not(:last-child)::after {
+    content: ""; position: absolute; top: 50%; right: -10px; width: 20px; height: 2px;
+    background: var(--accent); transform: translateY(-50%);
+  }
+  .pipeline .stage:not(:last-child)::before {
+    content: ""; position: absolute; top: 50%; right: -14px; width: 0; height: 0;
+    border-left: 8px solid var(--accent); border-top: 6px solid transparent; border-bottom: 6px solid transparent;
+    transform: translateY(-50%); z-index: 2;
+  }
+  .pipeline .stage:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+  .pipeline .stage:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+  .pipeline .stage .tag { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--dim); }
+  .pipeline .stage .name { font-weight: 600; font-size: 14px; margin-top: 4px; }
+  .pipeline .stage .what { color: var(--dim); font-size: 12px; margin-top: 4px; }
+  @media (max-width: 800px) {
+    .pipeline { grid-template-columns: 1fr; }
+    .pipeline .stage:not(:last-child)::after,
+    .pipeline .stage:not(:last-child)::before { display: none; }
+  }
+
+  /* Tree */
+  .tree { font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--panel-2); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; white-space: pre; overflow-x: auto; }
+  .tree .c { color: var(--dim); }
+  .tree .ui { color: var(--blue); }
+  .tree .logic { color: var(--orange); }
+  .tree .data { color: var(--green); }
+  .tree .shape { color: var(--pink); }
+  .tree .root { color: var(--accent-2); }
+
+  /* Steps */
+  ol.steps { list-style: none; margin: 0; padding: 0; counter-reset: step; }
+  ol.steps li {
+    position: relative; padding: 12px 14px 12px 56px;
+    border-left: 2px solid var(--line); margin-left: 18px;
+  }
+  ol.steps li::before {
+    counter-increment: step;
+    content: counter(step);
+    position: absolute; left: -16px; top: 12px; width: 30px; height: 30px; border-radius: 50%;
+    display: grid; place-items: center;
+    background: var(--accent); color: #0b1020; font-weight: 700; font-size: 13px;
+  }
+  ol.steps li .head { font-weight: 600; }
+  ol.steps li .det { color: var(--dim); font-size: 13px; margin-top: 2px; }
+
+  /* Tables */
+  table.metaphor { width: 100%; border-collapse: collapse; }
+  table.metaphor th, table.metaphor td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line); font-size: 14px; }
+  table.metaphor th { color: var(--dim); font-weight: 500; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; }
+  table.metaphor td:first-child { color: var(--accent-2); }
+
+  footer { color: var(--dim); font-size: 13px; text-align: center; margin-top: 30px; }
+  code.k { background: rgba(255,255,255,0.07); padding: 1px 6px; border-radius: 4px; font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>GameDay Hub — Visual Project Map</h1>
+  <p>A picture-first tour of the entire project for someone who has never coded before. Each section answers one question. Open <code class="k">PROJECT_GUIDE.md</code> alongside this for the long-form explanation.</p>
+  <nav class="toc">
+    <a href="#what">What is it?</a>
+    <a href="#metaphor">The restaurant metaphor</a>
+    <a href="#layers">The 4 layers</a>
+    <a href="#tree">Folder map</a>
+    <a href="#flow">Data flow</a>
+    <a href="#components">Component tree</a>
+    <a href="#click">A click, step by step</a>
+    <a href="#stack">Tech stack</a>
+    <a href="#run">How to run</a>
+  </nav>
+</header>
+
+<!-- 1. WHAT -->
+<section class="card" id="what">
+  <h2><span class="num">01</span>What is it?</h2>
+  <p class="lead">A single-page website that shows every major sports game happening today, with live scores, betting odds, weather, lineups, and ticket prices — all on one screen.</p>
+  <div class="row cols-4">
+    <div class="box ui"><div class="title">Live Scores</div><div class="subtitle">Auto-refresh every 30 seconds</div></div>
+    <div class="box ui"><div class="title">Favorite Teams</div><div class="subtitle">Star teams; they float to the top</div></div>
+    <div class="box ui"><div class="title">Filters & Search</div><div class="subtitle">By league, by team, live-only</div></div>
+    <div class="box ui"><div class="title">Game Details Modal</div><div class="subtitle">Lineups · Odds · Tickets · Weather</div></div>
+  </div>
+</section>
+
+<!-- 2. METAPHOR -->
+<section class="card" id="metaphor">
+  <h2><span class="num">02</span>The restaurant metaphor</h2>
+  <p class="lead">If the project were a restaurant…</p>
+  <table class="metaphor">
+    <thead><tr><th>Restaurant role</th><th>In this project</th><th>Folder</th></tr></thead>
+    <tbody>
+      <tr><td>Dining room (what you see)</td><td>Components — buttons, cards, modals</td><td><code class="k">src/components</code></td></tr>
+      <tr><td>Waiter (takes orders, delivers food)</td><td>Hooks — fetch data, hand it to the UI</td><td><code class="k">src/hooks</code></td></tr>
+      <tr><td>Kitchen (cooks the food)</td><td>Services — call ESPN, Odds API, etc.</td><td><code class="k">src/services</code></td></tr>
+      <tr><td>Pantry & recipe book</td><td>Types + mock data + util helpers</td><td><code class="k">src/types</code>, <code class="k">src/data</code>, <code class="k">src/utils</code></td></tr>
+      <tr><td>The building</td><td>React + Vite + TypeScript</td><td>the whole repo</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- 3. LAYERS -->
+<section class="card" id="layers">
+  <h2><span class="num">03</span>The 4 layers of the code</h2>
+  <p class="lead">Every file in <code class="k">src/</code> belongs to one of these four layers. Color = layer for the rest of this map.</p>
+  <div class="row cols-4">
+    <div class="box ui">
+      <div class="title">UI layer</div>
+      <div class="subtitle">Renders pixels. Listens to clicks.</div>
+      <div class="subtitle" style="margin-top:8px;">components/, pages/</div>
+    </div>
+    <div class="box logic">
+      <div class="title">Logic layer</div>
+      <div class="subtitle">Decides what to fetch. Remembers state.</div>
+      <div class="subtitle" style="margin-top:8px;">hooks/</div>
+    </div>
+    <div class="box data">
+      <div class="title">Data layer</div>
+      <div class="subtitle">Talks to the outside world. Returns clean data.</div>
+      <div class="subtitle" style="margin-top:8px;">services/</div>
+    </div>
+    <div class="box shape">
+      <div class="title">Shape layer</div>
+      <div class="subtitle">Defines what data looks like. Provides mock data.</div>
+      <div class="subtitle" style="margin-top:8px;">types/, data/, utils/</div>
+    </div>
+  </div>
+  <div class="legend">
+    <span class="swatch"><span class="dot" style="background:#79c8ff"></span> UI</span>
+    <span class="swatch"><span class="dot" style="background:#ffb86b"></span> Logic</span>
+    <span class="swatch"><span class="dot" style="background:#6ee7b7"></span> Data</span>
+    <span class="swatch"><span class="dot" style="background:#ff8ad8"></span> Shape</span>
+  </div>
+</section>
+
+<!-- 4. TREE -->
+<section class="card" id="tree">
+  <h2><span class="num">04</span>Folder map (color-coded by layer)</h2>
+  <p class="lead">The whole project, on one screen.</p>
+<div class="tree"><span class="root">sportsDashboard/</span>
+├── <span class="c">public/                </span>← static images (favicon, icons)
+├── <span class="c">index.html             </span>← the single HTML page everything injects into
+├── <span class="c">package.json           </span>← list of every library this project depends on
+└── <span class="root">src/</span>
+    ├── <span class="ui">main.tsx               </span>← <span class="c">boots the app</span>
+    ├── <span class="ui">App.tsx                </span>← <span class="c">root component (just shows Dashboard)</span>
+    ├── <span class="ui">pages/</span>
+    │   └── <span class="ui">Dashboard.tsx      </span>← <span class="c">THE main page — assembles everything</span>
+    ├── <span class="ui">components/            </span>← <span class="c">reusable UI pieces</span>
+    │   ├── <span class="ui">Sidebar.tsx</span>
+    │   ├── <span class="ui">GameCard.tsx</span>, <span class="ui">GameListItem.tsx</span>
+    │   ├── <span class="ui">GameDetailsModal.tsx</span> (the popup)
+    │   ├── <span class="ui">ScoreTicker.tsx</span>, <span class="ui">StandingsPanel.tsx</span>
+    │   ├── <span class="ui">FavoriteTeamButton.tsx</span>, <span class="ui">LeagueFilter.tsx</span>, <span class="ui">SearchBar.tsx</span>
+    │   ├── <span class="ui">OddsTable.tsx</span>, <span class="ui">TicketPriceCard.tsx</span>, <span class="ui">LineupSection.tsx</span>
+    │   ├── <span class="ui">LoadingSpinner.tsx</span>, <span class="ui">EmptyState.tsx</span>
+    │   └── <span class="ui">cards/             </span>← <span class="c">sport-specific card layouts</span>
+    │       ├── <span class="ui">BaseballGameCard.tsx</span>
+    │       ├── <span class="ui">BasketballGameCard.tsx</span>
+    │       ├── <span class="ui">FootballGameCard.tsx</span>
+    │       ├── <span class="ui">HockeyGameCard.tsx</span>
+    │       └── <span class="ui">SoccerGameCard.tsx</span>
+    ├── <span class="logic">hooks/                 </span>← <span class="c">reusable behavior</span>
+    │   ├── <span class="logic">useGames.ts        </span>← <span class="c">fetch + auto-refresh every 30s</span>
+    │   ├── <span class="logic">useFavorites.ts    </span>← <span class="c">track starred teams; saves to localStorage</span>
+    │   ├── <span class="logic">useFilters.ts      </span>← <span class="c">apply filters/sort to games</span>
+    │   └── <span class="logic">useGameSummary.ts  </span>← <span class="c">fetch deep details on demand</span>
+    ├── <span class="data">services/              </span>← <span class="c">talks to outside servers</span>
+    │   ├── <span class="data">sportsApi.ts       </span>← <span class="c">ESPN scoreboard endpoints</span>
+    │   ├── <span class="data">oddsApi.ts         </span>← <span class="c">The Odds API</span>
+    │   ├── <span class="data">ticketsApi.ts      </span>← <span class="c">SeatGeek / Ticketmaster</span>
+    │   └── <span class="data">weatherApi.ts      </span>← <span class="c">Open-Meteo forecast</span>
+    ├── <span class="shape">types/index.ts         </span>← <span class="c">Team, Game, Odds, Standings shapes</span>
+    ├── <span class="shape">utils/formatters.ts    </span>← <span class="c">date & number formatting</span>
+    ├── <span class="shape">data/mockData.ts       </span>← <span class="c">8 realistic fake games (fallback)</span>
+    └── <span class="ui">index.css              </span>← <span class="c">global styles</span></div>
+</section>
+
+<!-- 5. FLOW -->
+<section class="card" id="flow">
+  <h2><span class="num">05</span>Data flow — from internet to your eyes</h2>
+  <p class="lead">When the page loads, data travels through five stages, left to right.</p>
+  <div class="pipeline">
+    <div class="stage">
+      <div class="tag">Source</div>
+      <div class="name">ESPN / Odds API / SeatGeek / Open-Meteo</div>
+      <div class="what">Public sports data on the internet.</div>
+    </div>
+    <div class="stage">
+      <div class="tag">Service</div>
+      <div class="name">sportsApi.ts &amp; friends</div>
+      <div class="what">Fetches the raw JSON. Normalizes it to our shape. Falls back to mock data if offline.</div>
+    </div>
+    <div class="stage">
+      <div class="tag">Hook</div>
+      <div class="name">useGames / useFilters</div>
+      <div class="what">Stores the result in React state. Re-runs every 30 s for live games. Applies filters.</div>
+    </div>
+    <div class="stage">
+      <div class="tag">Page</div>
+      <div class="name">Dashboard.tsx</div>
+      <div class="what">Decides the layout: grid vs list, today vs upcoming, with/without standings panel.</div>
+    </div>
+    <div class="stage">
+      <div class="tag">UI</div>
+      <div class="name">GameCard · ScoreTicker · Modal</div>
+      <div class="what">Renders the data you actually see and click on.</div>
+    </div>
+  </div>
+  <p class="lead" style="margin-top:16px;">
+    Favorites travel in reverse: you click a star → <code class="k">useFavorites</code> updates → it writes to your browser's <code class="k">localStorage</code> so it survives refresh.
+  </p>
+</section>
+
+<!-- 6. COMPONENTS -->
+<section class="card" id="components">
+  <h2><span class="num">06</span>Component tree — what nests inside what</h2>
+  <p class="lead">A component is a self-contained piece of UI. Here's how they fit together when the app is running.</p>
+<div class="tree"><span class="root">&lt;App /&gt;</span>
+└── <span class="ui">&lt;Dashboard /&gt;                            </span><span class="c">the page</span>
+    ├── <span class="ui">&lt;Sidebar /&gt;                          </span><span class="c">left nav — leagues, search, sort</span>
+    │   ├── <span class="ui">&lt;SearchBar /&gt;</span>
+    │   └── <span class="ui">&lt;LeagueFilter /&gt;</span>
+    ├── <span class="c">&lt;header&gt;                              ← view toggle, date nav, live count</span>
+    ├── <span class="ui">&lt;ScoreTicker /&gt;                      </span><span class="c">scrolling live scores ribbon</span>
+    ├── <span class="c">grid of:</span>
+    │   └── <span class="ui">&lt;GameCard /&gt;                     </span><span class="c">one per game (or &lt;GameListItem /&gt; in list mode)</span>
+    │       ├── <span class="ui">&lt;BaseballGameCard /&gt;</span>  ← <span class="c">picked by sport</span>
+    │       ├── <span class="ui">&lt;BasketballGameCard /&gt;</span>
+    │       ├── <span class="ui">&lt;FootballGameCard /&gt;</span>
+    │       ├── <span class="ui">&lt;HockeyGameCard /&gt;</span>
+    │       └── <span class="ui">&lt;SoccerGameCard /&gt;</span>
+    │       └── <span class="ui">&lt;FavoriteTeamButton /&gt;          </span><span class="c">the star icon</span>
+    ├── <span class="ui">&lt;GameDetailsModal /&gt;                 </span><span class="c">popup when you click a card</span>
+    │   ├── <span class="ui">&lt;LineupSection /&gt;</span>
+    │   ├── <span class="ui">&lt;OddsTable /&gt;</span>
+    │   └── <span class="ui">&lt;TicketPriceCard /&gt;</span>
+    └── <span class="ui">&lt;StandingsPanel /&gt;                   </span><span class="c">slide-in W-L table</span></div>
+</section>
+
+<!-- 7. CLICK -->
+<section class="card" id="click">
+  <h2><span class="num">07</span>A click, step by step</h2>
+  <p class="lead">What actually happens from the moment you open the URL to the moment you star a favorite team.</p>
+  <ol class="steps">
+    <li><div class="head">Browser loads <code class="k">index.html</code></div><div class="det">It's nearly empty — just a <code class="k">&lt;div id="root"&gt;</code>. Then it loads <code class="k">main.tsx</code>.</div></li>
+    <li><div class="head"><code class="k">main.tsx</code> mounts <code class="k">&lt;App /&gt;</code> into that div</div><div class="det"><code class="k">App.tsx</code> simply renders <code class="k">&lt;Dashboard /&gt;</code> — the real page.</div></li>
+    <li><div class="head"><code class="k">Dashboard</code> calls <code class="k">useGames(...)</code></div><div class="det">"Hey, I need today's games." This kicks off a fetch.</div></li>
+    <li><div class="head"><code class="k">sportsApi.ts</code> calls ESPN — 8 leagues in parallel</div><div class="det">NBA, NFL, MLB, NHL, NCAAF, NCAAB, MLS, EPL. It normalizes every response into our universal <code class="k">Game</code> shape.</div></li>
+    <li><div class="head">Odds + tickets + weather merge in</div><div class="det">From <code class="k">oddsApi.ts</code>, <code class="k">ticketsApi.ts</code>, <code class="k">weatherApi.ts</code>. If no API key is set, mock data fills in.</div></li>
+    <li><div class="head"><code class="k">useFilters</code> trims the list</div><div class="det">If you have league filters or "favorites only" turned on, only matching games make it to the screen.</div></li>
+    <li><div class="head">Dashboard renders one <code class="k">&lt;GameCard /&gt;</code> per remaining game</div><div class="det">Sport-specific layout chosen automatically per league.</div></li>
+    <li><div class="head">Every 30 seconds, <code class="k">useGames</code> silently re-fetches</div><div class="det">Live scores stay current. The page never reloads — only the data does.</div></li>
+    <li><div class="head">You click a game → <code class="k">setSelectedGame()</code> runs</div><div class="det">The <code class="k">GameDetailsModal</code> opens with venue, lineups, odds table, tickets, weather.</div></li>
+    <li><div class="head">You click the ⭐ on a team</div><div class="det"><code class="k">useFavorites.toggleFavorite()</code> updates state AND writes to <code class="k">localStorage</code>. Survives refresh.</div></li>
+  </ol>
+</section>
+
+<!-- 8. STACK -->
+<section class="card" id="stack">
+  <h2><span class="num">08</span>The tech stack in plain English</h2>
+  <p class="lead">The five tools that make this project work.</p>
+  <div class="row cols-5">
+    <div class="box ui">
+      <div class="title">React</div>
+      <div class="subtitle">Library for building the page out of reusable Lego-like pieces called components.</div>
+    </div>
+    <div class="box ui">
+      <div class="title">TypeScript</div>
+      <div class="subtitle">Spell-check for code. Catches mistakes before the page ever runs.</div>
+    </div>
+    <div class="box ui">
+      <div class="title">Vite</div>
+      <div class="subtitle">Bundles everything and runs the local dev server you preview in the browser.</div>
+    </div>
+    <div class="box ui">
+      <div class="title">Tailwind CSS</div>
+      <div class="subtitle">Styling via tiny pre-made classes (e.g., <code class="k">text-red-500</code>) instead of custom CSS.</div>
+    </div>
+    <div class="box ui">
+      <div class="title">Axios</div>
+      <div class="subtitle">Small helper that fetches data from other websites (the APIs).</div>
+    </div>
+  </div>
+</section>
+
+<!-- 9. RUN -->
+<section class="card" id="run">
+  <h2><span class="num">09</span>How to run it</h2>
+  <p class="lead">From the terminal, inside this project folder:</p>
+<div class="tree"><span class="c"># Install everything (only needed the first time)</span>
+npm install
+
+<span class="c"># Start the dev server. Open the URL it prints in your browser.</span>
+npm run dev
+
+<span class="c"># Build a production bundle (output appears in dist/)</span>
+npm run build
+
+<span class="c"># Preview that production bundle locally</span>
+npm run preview</div>
+</section>
+
+<footer>
+  GameDay Hub · open <code class="k">PROJECT_GUIDE.md</code> for the long-form companion to this map.
+</footer>
+
+</div>
+</body>
+</html>

@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { StarIcon } from '@heroicons/react/24/solid'
 import type { Game, Team } from '../../types'
 import FavoriteTeamButton from '../FavoriteTeamButton'
-import { LEAGUE_COLORS } from '../../data/mockData'
+import { LEAGUE_COLORS } from '../../utils/leagues'
 import { classNames, getStatusColor, getStatusLabel } from '../../utils/formatters'
 
 export interface CardProps {

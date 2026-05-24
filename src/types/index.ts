@@ -169,4 +169,60 @@ export interface LeagueStandings {
   leagueId: LeagueId
   lastUpdated: string
   groups: StandingsGroup[]
+  divisionGroups?: StandingsGroup[]
+}
+
+// ── Prediction model ──────────────────────────────────────────
+
+export type BetMarket = 'moneyline' | 'spread' | 'total'
+
+export type BetSide =
+  | { market: 'moneyline'; team: 'home' | 'away' }
+  | { market: 'spread'; team: 'home' | 'away' }
+  | { market: 'total'; pick: 'over' | 'under' }
+
+// 1 = pass, 5 = strong play. Derived from edge magnitude.
+export type ValueRating = 1 | 2 | 3 | 4 | 5
+
+export interface MarketEdge {
+  side: BetSide
+  // Model's true probability for this side (0..1).
+  modelProb: number
+  // Market's vig-stripped implied probability for this side (0..1).
+  marketProb: number
+  // modelProb - marketProb. Positive = model thinks side is undervalued.
+  edge: number
+  // American odds string for the side, e.g. "+115" or "-180".
+  americanOdds: string
+  // The "fair" American odds the model thinks should be on this side.
+  fairAmericanOdds: string
+  value: ValueRating
+}
+
+export interface PredictionFactor {
+  label: string
+  // Negative = leans away, positive = leans toward the home team.
+  // For totals, positive = leans over.
+  delta: number
+  detail?: string
+}
+
+export interface GamePrediction {
+  gameId: string
+  // Model's predicted home win probability (0..1).
+  modelHomeWinProb: number
+  // Model's projected combined total score.
+  modelTotal: number
+  // Model's projected score margin (positive = home favored, negative = away favored).
+  modelMargin: number
+  // 0..100. Reflects data completeness, not prediction skill.
+  confidence: number
+  // Top contributing factors in the model. Used for transparency.
+  factors: PredictionFactor[]
+  // Per-market edges (only included when matching market odds exist).
+  edges: MarketEdge[]
+  // The "best" market edge (highest absolute edge); convenient for sorting.
+  bestEdge?: MarketEdge
+  // True if any required input was missing — useful for UI warnings.
+  hasGaps: boolean
 }

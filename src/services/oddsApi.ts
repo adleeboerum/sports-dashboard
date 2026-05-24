@@ -85,10 +85,22 @@ function parseGame(g: any): { key: string; odds: GameOdds[] } | null {
   return { key: matchupKey(awayName, homeName), odds: out }
 }
 
-export async function fetchOddsForLeague(leagueId: LeagueId): Promise<OddsByMatchup> {
-  if (!ODDS_API_KEY) return {}
+export type OddsFetchStatus =
+  | { kind: 'ok' }
+  | { kind: 'no-key' }
+  | { kind: 'unsupported' }
+  | { kind: 'quota-exceeded' }
+  | { kind: 'error'; message: string }
+
+export interface OddsFetchResult {
+  map: OddsByMatchup
+  status: OddsFetchStatus
+}
+
+export async function fetchOddsForLeague(leagueId: LeagueId): Promise<OddsFetchResult> {
+  if (!ODDS_API_KEY) return { map: {}, status: { kind: 'no-key' } }
   const sportKey = LEAGUE_TO_SPORT_KEY[leagueId]
-  if (!sportKey) return {}
+  if (!sportKey) return { map: {}, status: { kind: 'unsupported' } }
 
   try {
     const res = await oddsClient.get(`/sports/${sportKey}/odds`, {
@@ -106,9 +118,19 @@ export async function fetchOddsForLeague(leagueId: LeagueId): Promise<OddsByMatc
       const parsed = parseGame(g)
       if (parsed) map[parsed.key] = parsed.odds
     }
-    return map
-  } catch {
-    return {}
+    return { map, status: { kind: 'ok' } }
+  } catch (err) {
+    // The Odds API returns 401/429 with a JSON body on quota exhaustion.
+    if (axios.isAxiosError(err)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const body: any = err.response?.data
+      const code: string | undefined = body?.error_code
+      if (code === 'OUT_OF_USAGE_CREDITS' || err.response?.status === 401 || err.response?.status === 429) {
+        return { map: {}, status: { kind: 'quota-exceeded' } }
+      }
+      return { map: {}, status: { kind: 'error', message: err.message } }
+    }
+    return { map: {}, status: { kind: 'error', message: 'Unknown error' } }
   }
 }
 

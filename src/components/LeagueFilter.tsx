@@ -1,5 +1,5 @@
 import type { LeagueId } from '../types'
-import { LEAGUES, LEAGUE_COLORS } from '../data/mockData'
+import { LEAGUES, LEAGUE_COLORS } from '../utils/leagues'
 
 interface Props {
   selectedLeagues: LeagueId[]

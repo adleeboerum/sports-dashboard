@@ -7,7 +7,7 @@ import TicketPriceCard from './TicketPriceCard'
 import FavoriteTeamButton from './FavoriteTeamButton'
 import LineupSection from './LineupSection'
 import { formatGameTime, getStatusColor, getStatusLabel, classNames, getWinProbabilities } from '../utils/formatters'
-import { LEAGUE_COLORS } from '../data/mockData'
+import { LEAGUE_COLORS } from '../utils/leagues'
 import { useGameSummary } from '../hooks/useGameSummary'
 
 interface Props {

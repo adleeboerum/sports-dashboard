@@ -3,7 +3,7 @@ import { StarIcon as StarSolid } from '@heroicons/react/24/solid'
 import { StarIcon as StarOutline } from '@heroicons/react/24/outline'
 import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import type { Game } from '../types'
-import { LEAGUE_COLORS } from '../data/mockData'
+import { LEAGUE_COLORS } from '../utils/leagues'
 import { classNames, formatGameTime, getStatusColor } from '../utils/formatters'
 
 function SmallLogo({ logoUrl, name }: { logoUrl: string; name: string }) {
