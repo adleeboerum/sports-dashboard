@@ -21,6 +21,23 @@ export async function fetchTicketsForGame(homeTeam: string, awayTeam: string): P
   }
 }
 
-function parseSeatGeekResponse(_data: unknown): TicketInfo | null {
-  return null
+function parseSeatGeekResponse(data: unknown): TicketInfo | null {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const event = (data as any)?.events?.[0]
+  if (!event) return null
+  const stats = event.stats ?? {}
+  const lowestPrice: number | undefined = typeof stats.lowest_price === 'number' ? stats.lowest_price : undefined
+  const averagePrice: number | undefined = typeof stats.average_price === 'number' ? stats.average_price : undefined
+  const listingCount: number = typeof stats.listing_count === 'number' ? stats.listing_count : 0
+
+  const availability: TicketInfo['availability'] =
+    listingCount === 0 ? 'sold-out' : listingCount < 25 ? 'limited' : 'available'
+
+  return {
+    provider: 'SeatGeek',
+    lowestPrice,
+    averagePrice,
+    ticketUrl: event.url ?? 'https://seatgeek.com',
+    availability,
+  }
 }

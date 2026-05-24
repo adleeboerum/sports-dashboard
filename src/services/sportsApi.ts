@@ -1,6 +1,9 @@
 import axios from 'axios'
-import type { Game, GameStatus, LeagueId, Lineup, Player, Team, Venue } from '../types'
+import type { Game, GameOdds, GameStatus, LeagueId, Lineup, Player, Team, Venue, Weather } from '../types'
 import { MOCK_GAMES } from '../data/mockData'
+import { fetchOddsForLeague, lookupOdds } from './oddsApi'
+import { fetchWeather } from './weatherApi'
+import { fetchTicketsForGame } from './ticketsApi'
 
 const ESPN_BASE = 'https://site.api.espn.com/apis/site/v2/sports'
 
@@ -13,6 +16,9 @@ const ENDPOINTS: { url: string; leagueId: LeagueId }[] = [
   { url: `${ESPN_BASE}/baseball/mlb/scoreboard`, leagueId: 'MLB' },
   { url: `${ESPN_BASE}/hockey/nhl/scoreboard`, leagueId: 'NHL' },
   { url: `${ESPN_BASE}/basketball/mens-college-basketball/scoreboard`, leagueId: 'NCAAB' },
+  { url: `${ESPN_BASE}/football/college-football/scoreboard`, leagueId: 'NCAAF' },
+  { url: `${ESPN_BASE}/soccer/usa.1/scoreboard`, leagueId: 'MLS' },
+  { url: `${ESPN_BASE}/soccer/eng.1/scoreboard`, leagueId: 'EPL' },
 ]
 
 const SPORT_PATHS: Partial<Record<LeagueId, { sport: string; league: string }>> = {
@@ -22,6 +28,8 @@ const SPORT_PATHS: Partial<Record<LeagueId, { sport: string; league: string }>> 
   NCAAF: { sport: 'football', league: 'college-football' },
   MLB: { sport: 'baseball', league: 'mlb' },
   NHL: { sport: 'hockey', league: 'nhl' },
+  MLS: { sport: 'soccer', league: 'usa.1' },
+  EPL: { sport: 'soccer', league: 'eng.1' },
 }
 
 export interface GameSummaryData {
@@ -30,18 +38,40 @@ export interface GameSummaryData {
   probablePitchers?: { home?: Player; away?: Player }
 }
 
+// ── Today-only filter ─────────────────────────────────────────
+
+function todayYmd(): string {
+  const d = new Date()
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}${m}${day}`
+}
+
+function isToday(iso: string): boolean {
+  const d = new Date(iso)
+  const now = new Date()
+  return (
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+  )
+}
+
 // ── Scoreboard ────────────────────────────────────────────────
 
 export async function fetchTodaysGames(): Promise<Game[]> {
   if (USE_MOCK) {
     await new Promise((r) => setTimeout(r, 600))
-    return MOCK_GAMES
+    return MOCK_GAMES.filter((g) => isToday(g.startTime))
   }
+
+  const ymd = todayYmd()
 
   try {
     const results = await Promise.allSettled(
       ENDPOINTS.map(({ url, leagueId }) =>
-        axios.get(url).then((res) => parseEspnScoreboard(res.data, leagueId)),
+        axios.get(url, { params: { dates: ymd } }).then((res) => parseEspnScoreboard(res.data, leagueId)),
       ),
     )
 
@@ -50,9 +80,63 @@ export async function fetchTodaysGames(): Promise<Game[]> {
       if (result.status === 'fulfilled') games.push(...result.value)
     }
 
-    return games.length > 0 ? games : MOCK_GAMES
+    const todayGames = games.filter((g) => isToday(g.startTime))
+    if (todayGames.length === 0) {
+      // No real games today — fall back to mock data so the dashboard isn't empty.
+      return MOCK_GAMES.filter((g) => isToday(g.startTime))
+    }
+
+    // Enrich with multi-book odds from The Odds API (only when a key is configured
+    // and we don't already have rich multi-book odds from ESPN).
+    await Promise.all([
+      enrichOdds(todayGames),
+      enrichWeather(todayGames),
+      enrichTickets(todayGames),
+    ])
+    return todayGames
   } catch {
-    return MOCK_GAMES
+    return MOCK_GAMES.filter((g) => isToday(g.startTime))
+  }
+}
+
+async function enrichTickets(games: Game[]): Promise<void> {
+  // SeatGeek is the only integration available; bail if no key.
+  if (!import.meta.env.VITE_SEATGEEK_CLIENT_ID) return
+  await Promise.all(
+    games.map(async (g) => {
+      if (g.tickets) return
+      const t = await fetchTicketsForGame(g.homeTeam.name, g.awayTeam.name)
+      if (t) g.tickets = t
+    }),
+  )
+}
+
+async function enrichWeather(games: Game[]): Promise<void> {
+  const outdoor = games.filter((g) => g.venue.isOutdoor && !g.weather && g.venue.city)
+  await Promise.all(
+    outdoor.map(async (g) => {
+      const w = await fetchWeather(g.venue.city, g.venue.country)
+      if (w) g.weather = w
+    }),
+  )
+}
+
+async function enrichOdds(games: Game[]): Promise<void> {
+  const leagueIds = [...new Set(games.map((g) => g.leagueId))]
+  const results = await Promise.allSettled(
+    leagueIds.map(async (lid) => ({ lid, map: await fetchOddsForLeague(lid) })),
+  )
+  for (const r of results) {
+    if (r.status !== 'fulfilled') continue
+    const { lid, map } = r.value
+    if (!Object.keys(map).length) continue
+    for (const g of games) {
+      if (g.leagueId !== lid) continue
+      const found = lookupOdds(map, g.awayTeam.name, g.homeTeam.name)
+      if (found && found.length > (g.odds?.length ?? 0)) {
+        g.odds = found
+      }
+    }
   }
 }
 
@@ -84,11 +168,17 @@ export async function fetchGameSummary(
 
 // ── Scoreboard parser ─────────────────────────────────────────
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function mapStatus(name: string): GameStatus {
   switch (name) {
-    case 'STATUS_IN_PROGRESS': return 'live'
-    case 'STATUS_FINAL': return 'final'
+    case 'STATUS_IN_PROGRESS':
+    case 'STATUS_HALFTIME':
+    case 'STATUS_END_PERIOD':
+    case 'STATUS_DELAYED':
+    case 'STATUS_RAIN_DELAY':
+      return 'live'
+    case 'STATUS_FINAL':
+    case 'STATUS_FULL_TIME':
+      return 'final'
     case 'STATUS_POSTPONED': return 'postponed'
     case 'STATUS_CANCELED': return 'canceled'
     default: return 'scheduled'
@@ -108,6 +198,9 @@ function parseTeam(competitor: any, leagueId: LeagueId): Team {
     secondaryColor: `#${t.alternateColor ?? '666666'}`,
     leagueId,
     record: competitor.records?.[0]?.summary,
+    ranking: competitor.curatedRank?.current && competitor.curatedRank.current !== 99
+      ? competitor.curatedRank.current
+      : undefined,
   }
 }
 
@@ -119,12 +212,87 @@ function parseVenue(competition: any): Venue {
     name: v.fullName ?? 'TBD',
     city: v.address?.city ?? '',
     state: v.address?.state,
-    country: 'USA',
-    isOutdoor: !v.indoor,
+    country: v.address?.country ?? 'USA',
+    capacity: typeof v.capacity === 'number' ? v.capacity : undefined,
+    surface: v.grass != null ? (v.grass ? 'Grass' : 'Turf') : undefined,
+    isOutdoor: v.indoor === false,
   }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseWeather(event: any, competition: any): Weather | undefined {
+  const w = event.weather ?? competition.weather
+  if (!w) return undefined
+  const temp = typeof w.temperature === 'number'
+    ? w.temperature
+    : typeof w.highTemperature === 'number'
+      ? w.highTemperature
+      : undefined
+  if (temp == null && !w.displayValue) return undefined
+  return {
+    condition: w.displayValue ?? 'Unknown',
+    tempF: typeof temp === 'number' ? temp : 0,
+    windMph: typeof w.windSpeed === 'number' ? w.windSpeed : 0,
+    windDir: w.windDirection ?? '',
+    humidity: typeof w.humidity === 'number' ? w.humidity : 0,
+    precipChance: typeof w.precipitation === 'number' ? w.precipitation : 0,
+  }
+}
+
+function fmtSigned(n: number | undefined): string | undefined {
+  if (typeof n !== 'number' || Number.isNaN(n)) return undefined
+  return n > 0 ? `+${n}` : `${n}`
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseEspnOdds(competition: any): GameOdds[] | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const raw: any[] = competition.odds ?? []
+  if (!raw.length) return undefined
+
+  const out: GameOdds[] = []
+  for (const o of raw) {
+    const provider = o.provider ?? {}
+    const homeML = o.homeTeamOdds?.moneyLine ?? o.homeMoneyLine
+    const awayML = o.awayTeamOdds?.moneyLine ?? o.awayMoneyLine
+
+    const spread: number | undefined = o.spread
+    const homeFav: boolean = !!o.homeTeamOdds?.favorite
+    const homeSpreadVal = typeof spread === 'number'
+      ? (homeFav ? -Math.abs(spread) : Math.abs(spread))
+      : undefined
+    const awaySpreadVal = typeof homeSpreadVal === 'number' ? -homeSpreadVal : undefined
+
+    const overUnder: number | undefined = o.overUnder
+
+    if (homeML == null && awayML == null && spread == null && overUnder == null) continue
+
+    out.push({
+      sportsbook: {
+        id: String(provider.id ?? provider.name ?? out.length),
+        name: provider.name ?? 'Sportsbook',
+      },
+      moneyline: {
+        home: fmtSigned(homeML) ?? '—',
+        away: fmtSigned(awayML) ?? '—',
+      },
+      spread: {
+        home: fmtSigned(homeSpreadVal) ?? '—',
+        homeSpread: fmtSigned(o.homeTeamOdds?.spreadOdds) ?? '-110',
+        away: fmtSigned(awaySpreadVal) ?? '—',
+        awaySpread: fmtSigned(o.awayTeamOdds?.spreadOdds) ?? '-110',
+      },
+      total: {
+        over: fmtSigned(o.overOdds) ?? '-110',
+        under: fmtSigned(o.underOdds) ?? '-110',
+        line: typeof overUnder === 'number' ? overUnder : 0,
+      },
+      lastUpdated: new Date().toISOString(),
+    })
+  }
+  return out.length ? out : undefined
+}
+
 function parseEspnScoreboard(data: unknown, leagueId: LeagueId): Game[] {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const events: any[] = (data as any)?.events ?? []
@@ -154,11 +322,13 @@ function parseEspnScoreboard(data: unknown, leagueId: LeagueId): Game[] {
       status: mapStatus(statusName),
       homeScore: homeComp.score !== undefined ? Number(homeComp.score) : undefined,
       awayScore: awayComp.score !== undefined ? Number(awayComp.score) : undefined,
-      period: competition.status?.period ? String(competition.status.period) : undefined,
+      period: competition.status?.type?.shortDetail ?? (competition.status?.period ? String(competition.status.period) : undefined),
       clock: competition.status?.displayClock,
       venue: parseVenue(competition),
       broadcast: broadcasts.length > 0 ? broadcasts : undefined,
       headline,
+      weather: parseWeather(event, competition),
+      odds: parseEspnOdds(competition),
     })
   }
 
@@ -247,11 +417,12 @@ function parseHockeyBoxscore(teamData: any, confirmed: boolean): Lineup | null {
     const groupName: string = sg.name?.toLowerCase() ?? ''
     if (groupName === 'skaters') continue // aggregate group, skip
 
-    let posHint = ''
-    if (groupName === 'forwards') posHint = 'F'
-    else if (groupName === 'defenses') posHint = 'D'
-    else if (groupName === 'goalies') posHint = 'G'
-    else continue
+    const posHint =
+      groupName === 'forwards' ? 'F'
+      : groupName === 'defenses' ? 'D'
+      : groupName === 'goalies' ? 'G'
+      : ''
+    if (!posHint) continue
 
     const labels: string[] = sg.labels ?? []
 
@@ -326,6 +497,7 @@ function parseMlbSummary(teamData: any, rosterData: any, confirmed: boolean): Li
   }
 
   // Batting order from rosters section (when available, e.g. live/final games)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rosterEntries: any[] = rosterData?.roster ?? []
   if (rosterEntries.length) {
     const sorted = [...rosterEntries].sort(
@@ -462,6 +634,44 @@ function parseFootballBoxscore(teamData: any, confirmed: boolean): Lineup | null
   return { teamId: teamData.team?.id ?? '', confirmed, starters }
 }
 
+// ── Soccer ────────────────────────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function parseSoccerBoxscore(teamData: any, confirmed: boolean): Lineup | null {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const statGroups: any[] = teamData.statistics ?? []
+  const starters: Player[] = []
+  const bench: Player[] = []
+
+  for (const sg of statGroups) {
+    const labels: string[] = sg.labels ?? []
+    for (const a of sg.athletes ?? []) {
+      const athl = a.athlete ?? {}
+      const raw = zipStats(labels, a.stats ?? [])
+      const stats = pickStats(raw, ['G', 'A', 'SH', 'ST'])
+
+      const player: Player = {
+        id: athl.id ?? athl.displayName ?? 'unknown',
+        name: athl.displayName ?? 'Unknown',
+        position: athl.position?.abbreviation ?? '',
+        number: athl.jersey,
+        status: 'active',
+        stats: Object.keys(stats).length ? stats : undefined,
+      }
+      if (a.starter) starters.push(player)
+      else bench.push(player)
+    }
+  }
+
+  if (!starters.length && !bench.length) return null
+  return {
+    teamId: teamData.team?.id ?? '',
+    confirmed,
+    starters,
+    bench: bench.length ? bench : undefined,
+  }
+}
+
 // ── Top-level summary dispatcher ──────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -488,7 +698,6 @@ function parseEspnSummary(data: any, leagueId: LeagueId): GameSummaryData {
 
   // confirmed = game has actual player data (live or final)
   const confirmed = players.some(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (p) => (p.statistics?.[0]?.athletes ?? []).length > 0,
   )
 
@@ -507,6 +716,8 @@ function parseEspnSummary(data: any, leagueId: LeagueId): GameSummaryData {
       lineup = parseMlbSummary(teamData, rosterData, confirmed)
     } else if (leagueId === 'NFL' || leagueId === 'NCAAF') {
       lineup = parseFootballBoxscore(teamData, confirmed)
+    } else if (leagueId === 'MLS' || leagueId === 'EPL' || leagueId === 'UCL') {
+      lineup = parseSoccerBoxscore(teamData, confirmed)
     }
 
     if (!lineup) continue

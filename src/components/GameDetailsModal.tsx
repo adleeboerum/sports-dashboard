@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Dialog, DialogPanel, DialogTitle, Transition, TransitionChild } from '@headlessui/react'
 import { XMarkIcon, MapPinIcon, TvIcon, CloudIcon, ChartBarIcon } from '@heroicons/react/24/outline'
 import type { Game } from '../types'
@@ -395,12 +395,15 @@ function GameDetailsModalInner({ game, open, onClose, isFavoriteHome, isFavorite
 }
 
 export default function GameDetailsModal(props: Props) {
-  const lastGameRef = useRef<Game | null>(props.game)
+  // Hold onto the last opened game so the close transition can finish
+  // rendering after `props.game` is cleared.
+  const [lastGame, setLastGame] = useState<Game | null>(props.game)
   useEffect(() => {
-    if (props.game) lastGameRef.current = props.game
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (props.game) setLastGame(props.game)
   }, [props.game])
 
-  const displayGame = props.game ?? lastGameRef.current
+  const displayGame = props.game ?? lastGame
   if (!displayGame) return null
 
   return <GameDetailsModalInner {...props} game={displayGame} />

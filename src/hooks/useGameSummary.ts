@@ -6,18 +6,24 @@ import { fetchGameSummary, type GameSummaryData } from '../services/sportsApi'
 const cache = new Map<string, GameSummaryData>()
 
 export function useGameSummary(game: Game | null) {
-  const [summaryData, setSummaryData] = useState<GameSummaryData | null>(null)
+  const gameId = game?.id ?? null
+  const leagueId = game?.leagueId
+
+  // Initialize from cache so we don't render an empty state when reopening
+  const [summaryData, setSummaryData] = useState<GameSummaryData | null>(
+    gameId ? (cache.get(gameId) ?? null) : null,
+  )
   const [summaryLoading, setSummaryLoading] = useState(false)
 
   useEffect(() => {
-    if (!game) {
+    if (!gameId || !leagueId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSummaryData(null)
       return
     }
 
-    const key = game.id
-    if (cache.has(key)) {
-      setSummaryData(cache.get(key)!)
+    if (cache.has(gameId)) {
+      setSummaryData(cache.get(gameId)!)
       return
     }
 
@@ -25,11 +31,11 @@ export function useGameSummary(game: Game | null) {
     setSummaryLoading(true)
     setSummaryData(null)
 
-    fetchGameSummary(game.id, game.leagueId)
+    fetchGameSummary(gameId, leagueId)
       .then((data) => {
         if (cancelled) return
         if (data) {
-          cache.set(key, data)
+          cache.set(gameId, data)
           setSummaryData(data)
         }
       })
@@ -41,7 +47,7 @@ export function useGameSummary(game: Game | null) {
     return () => {
       cancelled = true
     }
-  }, [game?.id])
+  }, [gameId, leagueId])
 
   return { summaryData, summaryLoading }
 }
