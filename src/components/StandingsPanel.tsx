@@ -64,7 +64,7 @@ function StandingsTable({ standings, leagueId }: { standings: LeagueStandings; l
   )
 }
 
-function StandingRow({ entry, index, total, isHockey, isFootball }: {
+function StandingRow({ entry, index, total: _total, isHockey, isFootball }: {
   entry: StandingEntry
   index: number
   total: number
@@ -72,7 +72,6 @@ function StandingRow({ entry, index, total, isHockey, isFootball }: {
   isFootball: boolean
 }) {
   const isPlayoffLine = (index === 3 && isFootball) || (index === 4 && !isFootball && !isHockey) || (index === 3 && isHockey)
-  const _ = total // suppress unused
 
   return (
     <>
